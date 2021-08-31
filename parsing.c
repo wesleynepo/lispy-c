@@ -36,6 +36,7 @@ long evaluate_operation(long x, char* operator, long y) {
   if (strcmp(operator, "*") == 0) { return x * y; }
   if (strcmp(operator, "/") == 0) { return x / y; }
   if (strcmp(operator, "%") == 0) { return x % y; }
+  if (strcmp(operator, "^") == 0) { return pow(x, y); }
 
   return 0;
 }
@@ -70,7 +71,7 @@ int main(int argc, char** argv) {
   mpca_lang(MPCA_LANG_DEFAULT,
   "                                                     \
     number   : /-?[0-9]+/ ;                             \
-    operator : '+' | '-' | '*' | '/' | '%' ;           \
+    operator : '+' | '-' | '*' | '/' | '%' | '^' ;      \
     expr     : <number> | '(' <operator> <expr>+ ')' ;  \
     lispy    : /^/ <operator> <expr>+ /$/ ;             \
   ",
