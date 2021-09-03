@@ -35,13 +35,13 @@ enum { LERR_DIV_ZERO, LERR_BAD_OP, LERR_BAD_NUM };
 typedef struct {
   int type;
   union {
-    long num;
+    double num;
     int err;
   };
 } lval;
 
 
-lval lval_num(long x) {
+lval lval_num(double x) {
   lval v;
   v.type = LVAL_NUM;
   v.num = x;
@@ -57,7 +57,7 @@ lval lval_err(int x) {
 
 void lval_print(lval v) {
   switch (v.type) {
-    case LVAL_NUM: printf("%li", v.num); break;
+    case LVAL_NUM: printf("%f", v.num); break;
 
     case LVAL_ERR:
       if (v.err == LERR_DIV_ZERO) {
@@ -79,7 +79,7 @@ lval evaluate_operation(lval x, char* operator, lval y) {
   if (strcmp(operator, "+") == 0) { return lval_num(x.num + y.num); }
   if (strcmp(operator, "-") == 0) { return lval_num(x.num - y.num); }
   if (strcmp(operator, "*") == 0) { return lval_num(x.num * y.num); }
-  if (strcmp(operator, "%") == 0) { return lval_num(x.num % y.num); }
+  if (strcmp(operator, "%") == 0) { return lval_num(fmod(x.num, y.num)); }
   if (strcmp(operator, "^") == 0) { return lval_num(pow(x.num, y.num)); }
   if (strcmp(operator, "min") == 0) { return lval_num((x.num < y.num)? x.num : y.num); }
   if (strcmp(operator, "max") == 0) { return lval_num((x.num > y.num)? x.num : y.num); }
@@ -97,7 +97,7 @@ lval evaluate(mpc_ast_t* t) {
 
   if (strstr(t->tag, "number")) {
     errno = 0;
-    long x = strtol(t->contents, NULL, 10);
+    double x = strtod(t->contents, NULL);
     return errno != ERANGE ? lval_num(x) : lval_err(LERR_BAD_NUM);
   }
   
@@ -128,7 +128,7 @@ int main(int argc, char** argv) {
 
   mpca_lang(MPCA_LANG_DEFAULT,
   "                                                                 \
-    number   : /-?[0-9]+/ ;                                         \
+    number   : /-?[0-9]+(\\.[0-9]+)?/ ;                                         \
     operator : '+' | '-' | '*' | '/' | '%' | '^' | /min/ | /max/ ;  \
     expr     : <number> | '(' <operator> <expr>+ ')' ;              \
     lispy    : /^/ <operator> <expr>+ /$/ ;                         \
