@@ -343,6 +343,15 @@ lval* builtin_cons(lval* a) {
   return head;
 }
 
+lval* builtin_len(lval* a) {
+  LASSERT(a, a->cell[0]->type == LVAL_QEXPR, "Function 'len' passed incorrect type!");
+  LARGSSERT(a, 1);
+
+  lval* count = lval_num(a->cell[0]->count);
+  lval_del(a);
+
+  return count;
+}
 
 lval* builtin(lval* a, char* func) {
   if (strcmp("list", func) == 0) { return builtin_list(a); }
@@ -351,6 +360,7 @@ lval* builtin(lval* a, char* func) {
   if (strcmp("join", func) == 0) { return builtin_join(a); }
   if (strcmp("eval", func) == 0) { return builtin_eval(a); }
   if (strcmp("cons", func) == 0) { return builtin_cons(a); }
+  if (strcmp("len", func) == 0) { return builtin_len(a); }
   if (strstr("+-/*%^minmax", func)) { return builtin_op(a, func); }
   lval_del(a);
   return lval_err("Unknown Function!");
@@ -370,7 +380,7 @@ int main(int argc, char** argv) {
     number   : /-?[0-9]+(\\.[0-9]+)?/ ;                             \
     symbol : '+' | '-' | '*' | '/' | '%' | '^' | \"min\" | \"max\"  \
            | \"list\" | \"head\" | \"tail\" | \"join\" | \"eval\"   \
-           | \"cons\" ;  \
+           | \"cons\" | \"len\" ;  \
     sexpr  : '(' <expr>* ')' ;                                      \
     qexpr  : '{' <expr>* '}' ;                                      \
     expr   : <number> | <symbol> | <sexpr> | <qexpr> ;              \
