@@ -94,6 +94,15 @@ lval* lval_fun(lbuiltin func) {
   return v;
 }
 
+void lval_fun_name(lenv* e, lval* a) {
+  for (int i = 0; i < e->count; i++) {
+    if (e->vals[i]->fun == a->fun) {
+      printf("%s", e->syms[i]);
+      break;
+    }
+  }
+}
+
 lval* lval_eval(lenv* e, lval* v);
 
 lval* lval_num(double x) {
@@ -214,13 +223,13 @@ void lenv_del(lenv* e) {
   free(e);
 }
 
-void lval_print(lval* v);
+void lval_print(lenv* e, lval* v);
 
-void lval_expr_print(lval* v, char open, char close) {
+void lval_expr_print(lenv* e, lval* v, char open, char close) {
   putchar(open);
 
   for (int i = 0; i < v->count; i++ ) {
-    lval_print(v->cell[i]);
+    lval_print(e, v->cell[i]);
 
     if (i != (v->count -1)) {
       putchar(' ');
@@ -229,18 +238,18 @@ void lval_expr_print(lval* v, char open, char close) {
   putchar(close);
 }
 
-void lval_print(lval* v) {
+void lval_print(lenv* e,lval* v) {
   switch (v->type) {
     case LVAL_NUM:   printf("%f", v->num); break;
     case LVAL_ERR:   printf("Error: %s", v->err); break;
     case LVAL_SYM:   printf("%s", v->sym); break;
-    case LVAL_SEXPR: lval_expr_print(v, '(', ')'); break;
-    case LVAL_QEXPR: lval_expr_print(v, '{', '}'); break;
-    case LVAL_FUN: printf("<function>"); break;
+    case LVAL_SEXPR: lval_expr_print(e, v, '(', ')'); break;
+    case LVAL_QEXPR: lval_expr_print(e, v, '{', '}'); break;
+    case LVAL_FUN: lval_fun_name(e, v); break;
   }
 }
 
-void lval_println(lval* v) { lval_print(v); putchar('\n'); }
+void lval_println(lenv* e, lval* v) { lval_print(e, v); putchar('\n'); }
 
 lval* lval_pop(lval* v, int i) {
   lval* x = v->cell[i];
@@ -639,7 +648,7 @@ int main(int argc, char** argv) {
     if (mpc_parse("<stdin>", input, Lispy, &r)) {
       
       lval* x = lval_eval(e, lval_read(r.output));
-      lval_println(x);
+      lval_println(e, x);
       lval_del(x);
 
       mpc_ast_delete(r.output);
